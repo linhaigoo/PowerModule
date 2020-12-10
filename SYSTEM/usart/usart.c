@@ -63,7 +63,7 @@ void ComWrite(uint8_t* SendBuf,uint8_t lengthTemp)
 	}
 }
 
-void (PC_USART_IRQHandler)(void)
+void (USART_IRQHandler)(void)
 {
 	uint16_t temp = 0;
 

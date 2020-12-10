@@ -36,5 +36,13 @@ static  OS_TCB   TASK_DISPLAY_TCB;
 static  CPU_STK   TASK_DISPLAY_Stk[TASK_DISPLAY_STK_SIZE];
 void TASK_DISPLAY(void *pdata);
 /*********************************************************************/
+/*TASK_REGULATE*/
+/*********************************************************************/
+#define  TASK_REGULATE_PRIO                      3u
+#define  TASK_REGULATE_STK_SIZE                  512u
+static  OS_TCB   TASK_REGULATE_TCB;
+static  CPU_STK   TASK_REGULATE_Stk[TASK_REGULATE_STK_SIZE];
+void TASK_REGULATE(void *pdata);
+/*********************************************************************/
 /**************************END***************************************/
 #endif

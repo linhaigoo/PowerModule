@@ -10,7 +10,7 @@
 */
 #include "stdint.h"
 
-int Int2Str(unsigned int IntNum,char Buff[], uint8_t const BuffSize, uint8_t*Index,  uint8_t MinumdigitNum)
+int Int2Str(unsigned int IntNum, char Buff[], uint8_t const BuffSize, uint8_t*Index,  uint8_t MinumdigitNum)
 {
 	uint8_t IndexTemp = 0;
 	uint8_t BuffIndex;
@@ -20,41 +20,35 @@ int Int2Str(unsigned int IntNum,char Buff[], uint8_t const BuffSize, uint8_t*Ind
 	{
 		return  0;
 	}
-	if (IntNum == 0)
-	{
-		NumChar[IndexTemp] =  '0';
-		IndexTemp++;
-	}
+
 	while (IntNum > 0)
 	{
+		if(IndexTemp >= BuffSize-1)
+		{
+			return -2;
+		}
 		unsigned int Temp = IntNum / 10;
 		NumChar[IndexTemp] = (IntNum - Temp * 10) + '0';
 		IntNum = Temp;
 		IndexTemp++;
-		if (IndexTemp >= BuffSize-1)
-		{
-			return -2;
-		}
 	}
-	if (MinumdigitNum > IndexTemp)
+
+	for(;MinumdigitNum > IndexTemp; )
 	{
-		uint8_t zerofill = MinumdigitNum - IndexTemp;
-		for (; zerofill > 0; zerofill--)
+		if (IndexTemp >= BuffSize - 1)
 		{
-			NumChar[IndexTemp] =  '0';
-			IndexTemp++;
-			if (IndexTemp >= BuffSize - 1)
-			{
-				return -2;
-			}
+//			return -2;
+			break;
 		}
+		NumChar[IndexTemp++] =  '0';
 	}
 	for (BuffIndex = 0;IndexTemp > 0; IndexTemp--, BuffIndex++)
 	{
 		Buff[BuffIndex] = NumChar[IndexTemp - 1];
 	}
+	Buff[BuffIndex++] = '\0';
 	*Index += BuffIndex;
-	Buff[BuffIndex] = '\0';
+	
 	return BuffIndex;
 }
 
@@ -71,7 +65,7 @@ int Int2Str(unsigned int IntNum,char Buff[], uint8_t const BuffSize, uint8_t*Ind
 *               fabs(value)  must less than 0xffffffff
 */
 
-int MySnprintf(float value, char   Buff[], uint8_t const BuffSize,uint8_t const DecimalNum)
+int MySnprintf(float value, char   Buff[], uint8_t const BuffSize, int8_t DecimalNum)
 {
 	uint8_t BuffIndex = 0;
 	int TransState;
@@ -85,8 +79,7 @@ int MySnprintf(float value, char   Buff[], uint8_t const BuffSize,uint8_t const 
 	if (value < 0)
 	{
 		value = -value;
-		Buff[0] = '-';
-		BuffIndex++;
+		Buff[BuffIndex++] = '-';
 	}
 
 	if (value > 0xffffffff)
@@ -95,15 +88,25 @@ int MySnprintf(float value, char   Buff[], uint8_t const BuffSize,uint8_t const 
 	}
 	IntPart = (unsigned int)(value);
 	
-	TransState = Int2Str(IntPart, &Buff[BuffIndex], BuffSize - BuffIndex, &BuffIndex,0);
+	TransState = Int2Str(IntPart, &Buff[BuffIndex], BuffSize - BuffIndex, &BuffIndex,1);
 	if (TransState  <= 0)
 	{
 		return TransState;
 	}
 	
 	value -= IntPart;
+	
+	if(DecimalNum < 0)
+	{
+		DecimalNum = BuffSize-1 - BuffIndex;
+		if(DecimalNum < 0)
+		{
+			DecimalNum = 0;
+		}
+	}
+	
 
-	for (DecimalNumTemp = DecimalNum;DecimalNumTemp > 0; DecimalNumTemp--)
+	for (DecimalNumTemp = DecimalNum; DecimalNumTemp > 0; DecimalNumTemp--)
 	{
 		value *= 10;
 	}
@@ -116,31 +119,16 @@ int MySnprintf(float value, char   Buff[], uint8_t const BuffSize,uint8_t const 
 
 	if (DecimalNum > 0)
 	{
-		Buff[BuffIndex] = '.';
-		BuffIndex++;
-		if (DecimalPart == 0)
-		{
-			for (DecimalNumTemp = DecimalNum; DecimalNumTemp > 0; DecimalNumTemp--)
-			{
-				Buff[BuffIndex] = '0';
-				BuffIndex++;
-				if (BuffIndex >= BuffSize - 2)
-				{
-					return -2;
-				}
-			}
-			Buff[BuffIndex] = '\0';
-		}
-		else
-		{
-			TransState = Int2Str(DecimalPart, &Buff[BuffIndex], BuffSize - BuffIndex, &BuffIndex, DecimalNum);
-			if (TransState <= 0)
-			{
-				return TransState;
-			}
-		}		
+		BuffIndex--;
+		Buff[BuffIndex++] = '.';
+
+		TransState = Int2Str(DecimalPart, &Buff[BuffIndex], BuffSize - BuffIndex, &BuffIndex, DecimalNum);
 	}
-	return TransState;
+	if (TransState <= 0)
+	{
+		return TransState;
+	}
+	return BuffIndex;
 }
 
 int MySnprintfInt(int value, char   Buff[], uint8_t const BuffSize)
@@ -149,13 +137,12 @@ int MySnprintfInt(int value, char   Buff[], uint8_t const BuffSize)
 	if (value < 0)
 	{
 		value = -value;
-		Buff[0] = '-';
-		BuffIndex++;
+		Buff[BuffIndex++] = '-';
 	}
-	return Int2Str(value, &Buff[BuffIndex], BuffSize, 0,  0);
+	return Int2Str(value, &Buff[BuffIndex], BuffSize, 0,  1);
 }
 
-int MySnprintfFloat(float value, char   Buff[], uint8_t const BuffSize,uint8_t const DecimalNum)
+int MySnprintfFloat(float value, char   Buff[], uint8_t const BuffSize, int8_t const DecimalNum)
 {
 	return MySnprintf(value, Buff, BuffSize, DecimalNum);
 }

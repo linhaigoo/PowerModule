@@ -115,6 +115,20 @@ void OLED_ShowChar(u8 x,u8 y,u8 chr, u8 inv_mode)
 	OLED_WR_Byte(mask^F8X16[c*16+i+8],OLED_DATA);
 }
 
+void OLED_ShowStringAlign(u8 xAlign,u8 yAlign,const char *chr,u8 inv_mode)
+{
+	u8 x = xAlign << 3;
+	u8 y = yAlign << 1;
+	unsigned char j=0;
+	while (chr[j]!='\0')
+	{		
+		OLED_ShowChar(x,y,chr[j], inv_mode);
+		x+=8;
+		if(x>120){x=0;y+=2;}
+			j++;
+	}
+}
+
 void OLED_ShowString(u8 x,u8 y,const char *chr,u8 inv_mode)
 {
 	unsigned char j=0;

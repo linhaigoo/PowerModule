@@ -28,7 +28,7 @@
 #define ENC1_KEY_EXTI_PORT_SRC  EXTI_PortSourceGPIOB
 #define ENC1_KEY_EXTI_PIN_SRC   EXTI_PinSource8
 #define ENC1_KEY_EXTI_LINE      EXTI_Line8
-#define ENC1_KEY_EXTI_IRQN      EXTI15_10_IRQn
+#define ENC1_KEY_EXTI_IRQN      EXTI9_5_IRQn
 #define ENC1_KEY_VAL            PBin(8)  
 
 
@@ -54,7 +54,7 @@
 #define ENC2_KEY_EXTI_PORT_SRC  EXTI_PortSourceGPIOB
 #define ENC2_KEY_EXTI_PIN_SRC   EXTI_PinSource9
 #define ENC2_KEY_EXTI_LINE      EXTI_Line9
-#define ENC2_KEY_EXTI_IRQN      EXTI15_10_IRQn
+#define ENC2_KEY_EXTI_IRQN      EXTI9_5_IRQn
 #define ENC2_KEY_VAL            PBin(9)                
 
 typedef struct

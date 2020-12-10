@@ -40,7 +40,7 @@ s32 ENC_Read(ENC_KEY_Typedef ENC_KEY_Id)
 	ENC_KEY[ENC_KEY_Id].encoder = TIM_GetCounter(ENC_KEY_CH_TIM[ENC_KEY_Id]);
 	ENC_KEY[ENC_KEY_Id].count = ENC_KEY[ENC_KEY_Id].encoder - ENC_KEY[ENC_KEY_Id].old_encoder;
 	ENC_KEY[ENC_KEY_Id].distance += ENC_KEY[ENC_KEY_Id].count;
-	return ENC_KEY[ENC_KEY_Id].distance;
+	return ENC_KEY[ENC_KEY_Id].count;
 }
 
 u8 KEY_Read(ENC_KEY_Typedef ENC_KEY_Id)
@@ -126,7 +126,7 @@ void ENC_KEY_Init()
 }
 
 
-void EXTI15_10_IRQHandler(void) 
+void EXTI9_5_IRQHandler(void) 
 {
 	if(EXTI_GetITStatus(ENC1_KEY_EXTI_LINE) != RESET) 
 	{

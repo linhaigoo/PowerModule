@@ -4,6 +4,7 @@
 #include "includes.h"
 #include "TASK_Init.h"
 #include "System_Init.h"
+#include "PowerModule.h"
 
 
 int main(void)
@@ -41,6 +42,7 @@ void TaskStart(void *p_arg)
     Mem_Init();    // Initialize Memory Management Module
     Math_Init();
     
+	  PM_Init(&PM_module);
 	
 	  OS_CRITICAL_ENTER();
     OSTaskCreate  ((OS_TCB       *)&TASK_LED_TCB,
@@ -79,6 +81,20 @@ void TaskStart(void *p_arg)
 							 (CPU_STK      *)&TASK_DISPLAY_Stk[0],
 							 (CPU_STK_SIZE  )TASK_DISPLAY_STK_SIZE / 10,
 							 (CPU_STK_SIZE  )TASK_DISPLAY_STK_SIZE,
+							 (OS_MSG_QTY    )0,
+							 (OS_TICK       )0,
+							 (void         *)0,
+							 (OS_OPT        )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+							 (OS_ERR       *)&err);
+							 
+		OSTaskCreate  ((OS_TCB       *)&TASK_REGULATE_TCB,
+							 (CPU_CHAR     *)"REGULATE Task",
+							 (OS_TASK_PTR   )TASK_REGULATE,
+							 (void         *)0,
+							 (OS_PRIO       )TASK_REGULATE_PRIO,
+							 (CPU_STK      *)&TASK_REGULATE_Stk[0],
+							 (CPU_STK_SIZE  )TASK_REGULATE_STK_SIZE / 10,
+							 (CPU_STK_SIZE  )TASK_REGULATE_STK_SIZE,
 							 (OS_MSG_QTY    )0,
 							 (OS_TICK       )0,
 							 (void         *)0,
