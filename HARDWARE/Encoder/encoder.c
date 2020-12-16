@@ -45,8 +45,12 @@ s32 ENC_Read(ENC_KEY_Typedef ENC_KEY_Id)
 
 u8 KEY_Read(ENC_KEY_Typedef ENC_KEY_Id)
 {
-	u8 val = ENC_KEY[ENC_KEY_Id].key_pressed;
-	ENC_KEY[ENC_KEY_Id].key_pressed = 0;
+	u8 val = 0;
+	if(ENC_KEY[ENC_KEY_Id].key_pressed && ((uint32_t)KEY_TIME_GET() - ENC_KEY[ENC_KEY_Id].key_pressed_timestamp > KEY_JITTER_TIME_COUNT))
+	{
+		val = GPIO_ReadInputDataBit(ENC_KEY_KEY_PORT[ENC_KEY_Id], ENC_KEY_KEY_PIN[ENC_KEY_Id]) == RESET;
+		ENC_KEY[ENC_KEY_Id].key_pressed = 0;
+	}
 	return val;
 }
 
@@ -125,23 +129,43 @@ void ENC_KEY_Init()
 	}
 }
 
+//void EXTI9_5_IRQHandler(void) 
+//{
+//	if(EXTI_GetITStatus(ENC1_KEY_EXTI_LINE) != RESET) 
+//	{
+//		 ENC_KEY[ENC_KEY1].key_pressed = !ENC1_KEY_VAL;
+//			
+//			
 
-void EXTI9_5_IRQHandler(void) 
+//		EXTI_ClearITPendingBit(ENC1_KEY_EXTI_LINE);
+//	}
+//	if(EXTI_GetITStatus(ENC2_KEY_EXTI_LINE) != RESET) 
+//	{
+//		 ENC_KEY[ENC_KEY2].key_pressed = !ENC2_KEY_VAL;
+//			
+//			
+
+//		EXTI_ClearITPendingBit(ENC1_KEY_EXTI_LINE);
+//	}
+//}
+
+void ENC1_KEY_EXTI_IRQ_HANLDER(void)
 {
 	if(EXTI_GetITStatus(ENC1_KEY_EXTI_LINE) != RESET) 
 	{
 		 ENC_KEY[ENC_KEY1].key_pressed = !ENC1_KEY_VAL;
-			
-			
 
 		EXTI_ClearITPendingBit(ENC1_KEY_EXTI_LINE);
 	}
+}
+
+void ENC2_KEY_EXTI_IRQ_HANLDER(void)
+{
 	if(EXTI_GetITStatus(ENC2_KEY_EXTI_LINE) != RESET) 
 	{
 		 ENC_KEY[ENC_KEY2].key_pressed = !ENC2_KEY_VAL;
-			
-			
+		 ENC_KEY[ENC_KEY2].key_pressed_timestamp = KEY_TIME_GET();
 
-		EXTI_ClearITPendingBit(ENC1_KEY_EXTI_LINE);
+		EXTI_ClearITPendingBit(ENC2_KEY_EXTI_LINE);
 	}
 }

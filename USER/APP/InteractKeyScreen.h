@@ -25,7 +25,8 @@ void InterectMangeInit(INTERACT_MANGE_Typedef * pIntrMange);
 void InteractInit(INTERACT_MANGE_Typedef * pIntrMange);
 void interact(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, uint8_t key_pressed, short count);
 void showRealTimeVar(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM);
-
+void dynamicShow(INTERACT_MANGE_Typedef * pIntrMange);
+void realTimeInteract(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, uint8_t key_pressed, int16_t count);
 
 extern INTERACT_MANGE_Typedef InteractMange;
 #endif

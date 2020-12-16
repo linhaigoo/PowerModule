@@ -112,12 +112,12 @@ SCREEN_VAR_ID_Typedef varValueParser(SCREEN_VAR_ID_Typedef varID, PM_Typedef * p
 					
 				case I_LIM_VAR:
 					float_tmp = (float_tmp > 0) ? float_tmp : 0;
-					float_tmp = (float_tmp < ILIM_MAX) ? float_tmp : 0;
+					float_tmp = (float_tmp < ILIM_MAX) ? float_tmp : ILIM_MAX;
 					break;
 					
 				case V_LIM_VAR:
 					float_tmp = (float_tmp > 0) ? float_tmp : 0;
-					float_tmp = (float_tmp < VLIM_MAX) ? float_tmp : 0;
+					float_tmp = (float_tmp < VLIM_MAX) ? float_tmp : VLIM_MAX;
 					break;
 				default:
 					break;
@@ -150,17 +150,19 @@ const char * strPrepare(SCREEN_VAR_ID_Typedef id)
 			break;
 		case STRING_VAR:
 			pCompBox = (COMP_BOX_Typedef*)screen_vars[id].ptr;
-		case STRING:
-		    strTmp = screen_vars[id].type == STRING ? (char*)screen_vars[id].ptr :
-					&pCompBox->boxString[pCompBox->item_selected * pCompBox->stringLen];
+			strTmp = &pCompBox->boxString[pCompBox->item_selected * pCompBox->stringLen];
 			strBuff = &snprintfBuff[BLANK_SPACE_PRESERVE];
-			while(*strTmp != '\0' && strLen < 10)
-			{
-				*(strBuff++) = *(strTmp++);
+				while(*strTmp != '\0' && strLen < 10)
+				{
+					*(strBuff++) = *(strTmp++);
+					strLen++;
+				}
+				*strBuff = '\0';
 				strLen++;
-			}
-			*strBuff = '\0';
-			strLen++;
+		break;
+		case STRING:
+		    return (char*)screen_vars[id].ptr;
+//			break;
 		default:
 			break;
 	}
@@ -176,12 +178,12 @@ const char * strPrepare(SCREEN_VAR_ID_Typedef id)
 	return NULL;
 }
 
-bool strDirectShow(SCREEN_VAR_ID_Typedef id)
+bool strDirectShow(SCREEN_VAR_ID_Typedef id, bool inv_mode)
 {
 	const char * str = strPrepare(id);
 	if(str != NULL)
 	{
-		OLED_ShowStringAlign(screen_vars[id].pos_x, (screen_vars[id].pos_y % 2), str, false);
+		OLED_ShowStringAlign(screen_vars[id].pos_x, (screen_vars[id].pos_y % 2), str, inv_mode);
 		return true;
 	}
 	return false;
@@ -198,8 +200,10 @@ bool isOnPage(INTERACT_MANGE_Typedef * pIntrMange, SCREEN_VAR_ID_Typedef id)
 }
 
 
-//sync : one parameter come up in two position
 
+
+
+//sync : one parameter come up in two position
 bool strFill(INTERACT_MANGE_Typedef * pIntrMange, SCREEN_VAR_ID_Typedef id, bool sync, bool inv_mode)
 {
 	if(id != VAR_EMPTY)
@@ -239,6 +243,140 @@ bool strFill(INTERACT_MANGE_Typedef * pIntrMange, SCREEN_VAR_ID_Typedef id, bool
 	return false;
 }
 
+void switchPage(INTERACT_MANGE_Typedef * pIntrMange, uint8_t page)
+{
+	if(pIntrMange->curPage == page)return;
+	pIntrMange->curPage = page;
+	OLED_ShowStringAlign(0, 0, SCREEN_BUFFER[pIntrMange->curPage<<1], false);
+	OLED_ShowStringAlign(0, 1, SCREEN_BUFFER[(pIntrMange->curPage<<1) + 1], false);
+}
+void switchVarID(INTERACT_MANGE_Typedef * pIntrMange, uint8_t varID)
+{
+	if(pIntrMange->selectedVarID == varID)return;
+	pIntrMange->selectedVarID = varID;
+	if(isOnPage(pIntrMange, (SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID))
+	{
+		if(isOnPage(pIntrMange, (SCREEN_VAR_ID_Typedef)pIntrMange->prompID))
+		{
+			OLED_ShowStringAlign(screen_vars[pIntrMange->prompID].pos_x, (screen_vars[pIntrMange->prompID].pos_y % 2), pIntrMange->str, false);
+		}
+	}
+	else
+	{
+		//page switch
+		switchPage(pIntrMange, getPageOfVar((SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID));
+	}
+	pIntrMange->prompID = screen_vars[pIntrMange->selectedVarID].promp_id;
+	strFill(pIntrMange, (SCREEN_VAR_ID_Typedef)pIntrMange->prompID, false, true);
+}
+
+void switchMenuID(INTERACT_MANGE_Typedef * pIntrMange, uint8_t menuID)
+{
+	if(	pIntrMange->menuID == menuID)return;
+	pIntrMange->menuID = menuID % MENU_SIZE;
+	switchVarID(pIntrMange, screen_menu[pIntrMange->menuID]);
+}
+
+
+
+
+void varFine(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, int16_t count)
+{
+	float float_tmp;
+	int16_t   int_tmp;
+	SCREEN_VAR_ID_Typedef updateID;
+	SCREEN_VAR_ID_Typedef name_id;
+	switch(screen_vars[pIntrMange->selectedVarID].type)
+	{
+		case UINT8_T:
+			int_tmp = *(uint8_t*)screen_vars[pIntrMange->selectedVarID].ptr + (count>>2);
+		
+			updateID = varValueParser((SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID, pPM, &int_tmp, UINT8_T);
+			*(uint8_t*)screen_vars[pIntrMange->selectedVarID].ptr = int_tmp;
+		break;
+			
+		case FLOAT_T:
+			
+		float_tmp = *(float*)screen_vars[pIntrMange->selectedVarID].ptr + 0.01 * count;
+		
+		updateID = varValueParser((SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID, pPM, &float_tmp, FLOAT_T);
+		*(float*)screen_vars[pIntrMange->selectedVarID].ptr = float_tmp;
+		
+		break;
+
+		case STRING_VAR:
+		{
+			COMP_BOX_Typedef * ptr = (COMP_BOX_Typedef *)screen_vars[pIntrMange->selectedVarID].ptr;
+			
+			name_id = (SCREEN_VAR_ID_Typedef)(ptr->item_selected + count);
+			SCREEN_VAR_ID_Typedef updateID = varValueParser((SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID, pPM, (void*)&name_id, STRING_VAR);
+			
+			ptr->item_selected = name_id;
+			*(ptr->varPtr) = name_id;
+		}
+			break;
+		case WAVE:
+			break;
+		
+		default:
+			break;
+	}
+
+	if(updateID != VAR_EMPTY)
+	{
+		strFill(pIntrMange, updateID, true, false);
+	}
+	strFill(pIntrMange, (SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID, false, true);
+}
+
+void modifyStateSwitch(INTERACT_MANGE_Typedef * pIntrMange, uint8_t modifyState)
+{
+	if(pIntrMange->isModifying == modifyState)return;
+	pIntrMange->isModifying = modifyState;
+	if(pIntrMange->isModifying)
+	{
+		//menu promp >-->  value 
+		OLED_ShowStringAlign(screen_vars[pIntrMange->prompID].pos_x, (screen_vars[pIntrMange->prompID].pos_y % 2), pIntrMange->str, false);
+		strFill(pIntrMange, (SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID, false, true);
+	}
+	else
+	{
+
+		strFill(pIntrMange, (SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID, true, false);
+		//menu promp <--<  value
+		strFill(pIntrMange, (SCREEN_VAR_ID_Typedef)pIntrMange->prompID, false, true);
+	}
+}
+
+
+void dynamicShow(INTERACT_MANGE_Typedef * pIntrMange)
+{
+	if(pIntrMange->unOperationDuration > LOST_FOCUS_TIME)
+	{
+		pIntrMange->unOperationDuration = LOST_FOCUS_TIME;
+		if(pIntrMange->selectedVarID != VAR_EMPTY)
+		{
+			pIntrMange->selectedVarID = VAR_EMPTY;
+
+			//lost focus display
+			modifyStateSwitch(pIntrMange, false);
+		}
+	}
+	else if(pIntrMange->selectedVarID != VAR_EMPTY && !pIntrMange->isModifying)
+	{
+		//blink
+		pIntrMange->str_InvMode = !pIntrMange->str_InvMode;
+
+//			uint8_t id = pIntrMange->isModifying ? pIntrMange->selectedVarID : pIntrMange->prompID;
+		uint8_t id = pIntrMange->prompID;
+
+		OLED_ShowStringAlign(screen_vars[id].pos_x, (screen_vars[id].pos_y % 2), pIntrMange->str, pIntrMange->str_InvMode);
+	}
+}
+
+
+
+
 
 void interact(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, uint8_t key_pressed, int16_t count)
 {
@@ -254,147 +392,84 @@ void interact(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, uint8_t key
 	
 	if(key_pressed)
 	{
-		key_pressed = false;
 		if(pIntrMange->selectedVarID == VAR_EMPTY)
 		{
 			pPM->isWorking = false;
 		}
 		else
 		{
-			pIntrMange->isModifying = !pIntrMange->isModifying;
-			if(pIntrMange->isModifying)
-			{
-				//menu promp >-->  value 
-				OLED_ShowStringAlign(screen_vars[pIntrMange->prompID].pos_x, (screen_vars[pIntrMange->prompID].pos_y % 2), pIntrMange->str, false);
-				strFill(pIntrMange, pIntrMange->selectedVarID, false, true);
-			}
-			else
-			{
-
-				strFill(pIntrMange, pIntrMange->selectedVarID, true, false);
-				//menu promp <--<  value
-				strFill(pIntrMange, pIntrMange->prompID, false, true);
-			}
+			modifyStateSwitch(pIntrMange, !pIntrMange->isModifying);
 		}
 	}
 	else if(count != 0)
 	{
 		if(pIntrMange->isModifying)
 		{
-			float float_tmp;
-			int16_t   int_tmp;
-			SCREEN_VAR_ID_Typedef updateID;
-			SCREEN_VAR_ID_Typedef name_id;
-			switch(screen_vars[pIntrMange->selectedVarID].type)
-			{
-				case UINT8_T:
-					int_tmp = *(uint8_t*)screen_vars[pIntrMange->selectedVarID].ptr + (count>>2);
-				
-					updateID = varValueParser(pIntrMange->selectedVarID, pPM, &int_tmp, UINT8_T);
-					*(uint8_t*)screen_vars[pIntrMange->selectedVarID].ptr = int_tmp;
-				break;
-					
-				case FLOAT_T:
-					
-				float_tmp = *(float*)screen_vars[pIntrMange->selectedVarID].ptr + 0.01 * count;
-				
-				updateID = varValueParser(pIntrMange->selectedVarID, pPM, &float_tmp, FLOAT_T);
-				*(float*)screen_vars[pIntrMange->selectedVarID].ptr = float_tmp;
-				
-				break;
-
-				case STRING_VAR:
-				{
-					COMP_BOX_Typedef * ptr = (COMP_BOX_Typedef *)screen_vars[pIntrMange->selectedVarID].ptr;
-					
-					name_id = ptr->item_selected + count;
-					SCREEN_VAR_ID_Typedef updateID = varValueParser(pIntrMange->selectedVarID, pPM, &name_id, STRING_VAR);
-					
-					ptr->item_selected = name_id;
-					*(ptr->varPtr) = name_id;
-				}
-					break;
-				case WAVE:
-					break;
-				
-				default:
-					break;
-			}
-
-			if(updateID != VAR_EMPTY)
-			{
-				strFill(pIntrMange, updateID, true, false);
-			}
-			strFill(pIntrMange, pIntrMange->selectedVarID, false, true);
+			varFine(pIntrMange, pPM, count);
 		}
-
 		else
 		{
 			int16_t count_scale = count>>2;
-			pIntrMange->menuID += count_scale;
-			pIntrMange->menuID = pIntrMange->menuID % MENU_SIZE;
-			pIntrMange->selectedVarID = screen_menu[pIntrMange->menuID];
-			
-			if(isOnPage(pIntrMange, pIntrMange->selectedVarID))
-			{
-				if(isOnPage(pIntrMange, pIntrMange->prompID))
-				{
-					OLED_ShowStringAlign(screen_vars[pIntrMange->prompID].pos_x, (screen_vars[pIntrMange->prompID].pos_y % 2), pIntrMange->str, false);
-				}
-			}
-			else
-			{
-				//page switch
-				pIntrMange->curPage = getPageOfVar(pIntrMange->selectedVarID);
-				OLED_ShowStringAlign(0, 0, SCREEN_BUFFER[pIntrMange->curPage<<1], false);
-				OLED_ShowStringAlign(0, 1, SCREEN_BUFFER[(pIntrMange->curPage<<1) + 1], false);
-			}
-			
-			pIntrMange->prompID = screen_vars[pIntrMange->selectedVarID].promp_id;
-			strFill(pIntrMange, pIntrMange->prompID, false, true);
+			u8 menuID = ((uint16_t)(pIntrMange->menuID + count_scale)) % MENU_SIZE;
+			switchMenuID(pIntrMange, menuID);
 		}
-	}
-	else
-	{
-		if(pIntrMange->unOperationDuration > LOST_FOCUS_TIME)
-		{
-			pIntrMange->unOperationDuration = LOST_FOCUS_TIME;
-			if(pIntrMange->selectedVarID != VAR_EMPTY)
-			{
-				pIntrMange->selectedVarID = VAR_EMPTY;
-
-				//lost focus display
-				if(pIntrMange->isModifying)
-				{
-					pIntrMange->isModifying =false;
-					strFill(pIntrMange, pIntrMange->selectedVarID, false, false);
-				}
-				else
-				{
-					OLED_ShowStringAlign(screen_vars[pIntrMange->prompID].pos_x, (screen_vars[pIntrMange->prompID].pos_y % 2), pIntrMange->str, false);
-				}
-			}
-		}
-		else if(pIntrMange->selectedVarID != VAR_EMPTY && !pIntrMange->isModifying)
-		{
-			//blink
-			pIntrMange->str_InvMode = !pIntrMange->str_InvMode;
-
-//			uint8_t id = pIntrMange->isModifying ? pIntrMange->selectedVarID : pIntrMange->prompID;
-			uint8_t id = pIntrMange->prompID;
-
-			OLED_ShowStringAlign(screen_vars[id].pos_x, (screen_vars[id].pos_y % 2), pIntrMange->str, pIntrMange->str_InvMode);
-		}
-		
 	}
 }
 
+
+
+
+void realTimeInteract(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, uint8_t key_pressed, int16_t count)
+{
+	if(key_pressed || count != 0)
+	{
+		pIntrMange->unOperationDuration = 0;
+	}
+	else
+	{
+		pIntrMange->unOperationDuration++;
+	}	
+	
+	SCREEN_VAR_ID_Typedef varID = pPM->curMODE == AMP_MODE ? CURRENT_VAR : VOL_VAR;
+	u8 pageOfVar = getPageOfVar(varID);
+	
+	if(pIntrMange->unOperationDuration == 0 )
+	{
+		if(pIntrMange->selectedVarID == varID)
+		{
+			if(key_pressed)
+			{
+				if(pIntrMange->isModifying)
+				{
+					modifyStateSwitch(pIntrMange, false);
+				}
+				else
+				{
+					pPM->isWorking = !pPM->isWorking;		
+				}
+			}
+			else if(count != 0)
+			{
+				modifyStateSwitch(pIntrMange, true);
+				varFine(pIntrMange, pPM, count);
+			}
+		}
+		else
+		{
+			if(!pIntrMange->isModifying)
+			{
+				switchVarID(pIntrMange, varID); 
+			}
+			pPM->isWorking = false;
+		}
+	}
+}
 
 void showRealTimeVar(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM)
 {
 	if(pIntrMange->curPage == 0)
 	{
-		pPM->isWorking = true;//todo debug
+//		pPM->isWorking = true;//todo debug
 		if(pPM->isWorking)
 		{
 			if(pIntrMange->isModifying && screen_vars[pIntrMange->selectedVarID].ifOverLap)
@@ -402,27 +477,27 @@ void showRealTimeVar(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM)
 				if(pIntrMange->unOperationDuration > OVER_LAP_VAR_TIME)
 				{
 					//exit var fune state
-					pIntrMange->isModifying = false;
-					strFill(pIntrMange, pIntrMange->prompID, false, true);
+					modifyStateSwitch(pIntrMange, false);
 				}
 			}
 
 			if(!(pIntrMange->isModifying && pIntrMange->selectedVarID == CURRENT_VAR))
 			{
-				strDirectShow(CURRENT_CUR_VAR);
+				strDirectShow(CURRENT_CUR_VAR, false);
 			}
 			if(!(pIntrMange->isModifying && pIntrMange->selectedVarID == VOL_VAR))
 			{
-				strDirectShow(VOL_CUR_VAR);
+				strDirectShow(VOL_CUR_VAR, false);
 			}
+			OLED_ShowStringAlign(screen_vars[WAVE_DIAPLAY].pos_x, (screen_vars[WAVE_DIAPLAY].pos_y % 2), "___ON___", false);
 		}
 		else
 		{
-				strDirectShow(CURRENT_VAR);
-				strDirectShow(VOL_VAR);
+				strDirectShow(CURRENT_VAR, pIntrMange->isModifying && pIntrMange->selectedVarID == CURRENT_VAR);
+				strDirectShow(VOL_VAR, pIntrMange->isModifying && pIntrMange->selectedVarID == VOL_VAR);
 
 				//specific
-				OLED_ShowStringAlign(screen_vars[WAVE_DIAPLAY].pos_x, (screen_vars[WAVE_DIAPLAY].pos_y % 2), "___OFF__", false);
+			OLED_ShowStringAlign(screen_vars[WAVE_DIAPLAY].pos_x, (screen_vars[WAVE_DIAPLAY].pos_y % 2), "___OFF__", false);	
 		}
 		
 	}
@@ -436,14 +511,15 @@ void InteractInit(INTERACT_MANGE_Typedef * pIntrMange)
 	
 	InterectMangeInit(pIntrMange);
 	
+	pIntrMange->curPage = 0xFF;
+	switchPage(pIntrMange, 0);
+	
 	strFill(pIntrMange, I_LIM_VAR, true, false);
 	strFill(pIntrMange, V_LIM_VAR, true, false);
 	strFill(pIntrMange, I_LIM_VAR, true, false);
 	strFill(pIntrMange, MODE_VAR, true, false);
 	
-	pIntrMange->curPage = 0;
-	OLED_ShowStringAlign(0, 0, SCREEN_BUFFER[pIntrMange->curPage<<1], false);
-	OLED_ShowStringAlign(0, 1, SCREEN_BUFFER[(pIntrMange->curPage<<1) + 1], false);
+	
 }
 
 INTERACT_MANGE_Typedef InteractMange;

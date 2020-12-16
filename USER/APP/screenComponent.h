@@ -53,7 +53,7 @@ typedef struct
 	uint8_t pos_y;
 	uint8_t spaceLen;
 	VAR_TypeEdef type;
-	SCREEN_VAR_ID_Typedef promp_id;
+	uint8_t promp_id;
 	uint8_t rvar_id; //relative var id
 	uint8_t ifOverLap;
 	void * ptr;
@@ -63,11 +63,11 @@ typedef struct
 char SCREEN_BUFFER[6][19] = 
 {
 	//page 0 
-	"  0A    0s    0s",
-	"  0V    ___OFF__",
+	"0.00A 0.00s 0.00",
+	"0.00V   ___OFF__",
 	//page 1
-	"MODE  AL_T  ON_T",
-	"VOL     0s    0s",
+	"MODE ALL_T ON_T ",
+	"VOL  0.00s 0.00s",
   //page 2
 	"ID  I_LIM  V_LIM",
 	" 0   6.0A  40.0V"
@@ -95,25 +95,25 @@ COMP_BOX_Typedef PM_ModeBox = {(const char *)mode_string_COMBOX, MODE_NUM, 0, MO
 
 SCREEN_VAR_Typedef screen_vars[]=
 {
-	{0,0,0,0,0,0,NULL},
+	{0,0,0,FLOAT_T,0,0,NULL},
 	//id 1-9
-	{0,0,3,FLOAT_T,CURRENT_VAR_PROMP,0,0, &PM_module.iSet},    //current dispaly
-	{0,0,3,FLOAT_T,CURRENT_VAR_PROMP,0,1, &PM_module.iCur},    //cur current dispaly
-	{3,0,1,STRING,0,0,0, "A"},    //current promp
-	{5,0,3,FLOAT_T,ALL_T_PROMP,0,0, &PM_module.all_t},   //ALL_T dispaly
-	{11,0,3,FLOAT_T,ON_T_PROMP,0,0, &PM_module.on_t}, //ON_T dispaly
-	{0,1,3,FLOAT_T,VOL_VAR_PROMP,0,0, &PM_module.vSet}, //voltage dispaly
-	{0,1,3,FLOAT_T,VOL_VAR_PROMP,0,1, &PM_module.vCur}, //cur voltage dispaly
-	{3,1,1,STRING,0,0,0, "V"},              //voltage promp
+	{0,0,4,FLOAT_T,CURRENT_VAR_PROMP,0,0, &PM_module.iSet},    //current dispaly
+	{0,0,4,FLOAT_T,CURRENT_VAR_PROMP,0,1, &PM_module.iCur},    //cur current dispaly
+	{4,0,1,STRING,0,0,0, "A"},    //current promp
+	{6,0,4,FLOAT_T,ALL_T_PROMP,0,0, &PM_module.all_t},   //ALL_T dispaly
+	{12,0,4,FLOAT_T,ON_T_PROMP,0,0, &PM_module.on_t}, //ON_T dispaly
+	{0,1,4,FLOAT_T,VOL_VAR_PROMP,0,0, &PM_module.vSet}, //voltage dispaly
+	{0,1,4,FLOAT_T,VOL_VAR_PROMP,0,1, &PM_module.vCur}, //cur voltage dispaly
+	{4,1,1,STRING,0,0,0, "V"},              //voltage promp
 	{8,1,8,WAVE,0,0,0, &PM_module.time},   //wave dispaly	
 	
 	//id 10-15
 	{0,2,4,STRING,0,0,0,"MODE"},   	//MODE string
-	{6,2,4,STRING,0,0,0,"AL_T"},     //AL_T string
-	{12,2,4,STRING,0,0,0,"ON_T"}, 	 //ON_T string	
+	{5,2,5,STRING,0,0,0,"ALL_T"},     //AL_T string
+	{11,2,4,STRING,0,0,0,"ON_T"}, 	 //ON_T string	
 	{0,3,4,STRING_VAR, MODE_PROMP,0,0,&PM_ModeBox},   	//VOL/AMP string
-	{6,3,3,FLOAT_T, ALL_T_PROMP,0,0,&PM_module.all_t},     //AL_T var
-	{12,3,3,FLOAT_T,ON_T_PROMP,0,0,&PM_module.on_t}, 	 //ON_T var	
+	{5,3,4,FLOAT_T, ALL_T_PROMP,0,0,&PM_module.all_t},     //AL_T var
+	{11,3,4,FLOAT_T,ON_T_PROMP,0,0,&PM_module.on_t}, 	 //ON_T var	
 	
 	//id 16-21
 	{0,4,3,STRING,0,0,0,"ID"},   	//ID string
@@ -136,3 +136,4 @@ const uint8_t MENU_SIZE = sizeof(screen_menu) / sizeof(SCREEN_VAR_ID_Typedef);
 
 
 #endif
+

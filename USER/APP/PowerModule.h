@@ -2,6 +2,8 @@
 #define __POWER_MODULE_H__
 
 #include "stdint.h"
+#include "dac.h"
+#include "adc.h"
 
 #define PM_ID 2
 
@@ -29,6 +31,9 @@ typedef struct
 	uint8_t curMODE;//  0 :vol 1:amp
 	uint8_t ID;
 	uint8_t isWorking;
+	float vinCur;
+	float acs_i_cur;
+	float dac_out;
 }PM_Typedef;
 
 

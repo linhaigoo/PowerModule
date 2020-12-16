@@ -20,7 +20,11 @@ void TASK_DISPLAY(void *pdata)
 		encCount = ENC_Read(ENC_KEY1);
 		key_press = KEY_Read(ENC_KEY1);
 		interact(&InteractMange, &PM_module, key_press, encCount);
+		encCount = ENC_Read(ENC_KEY2);
+		key_press = KEY_Read(ENC_KEY2);
+		realTimeInteract(&InteractMange, &PM_module, key_press, encCount);
 		showRealTimeVar(&InteractMange, &PM_module);
+		dynamicShow(&InteractMange);
 		
 			delay_ms(200);
 		/***********************/

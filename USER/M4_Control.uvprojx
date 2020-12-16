@@ -137,7 +137,7 @@
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -186,7 +186,7 @@
             <hadIRAM2>1</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
-            <useUlib>1</useUlib>
+            <useUlib>0</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <nSecure>0</nSecure>
@@ -322,7 +322,7 @@
             <wLevel>0</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
-            <uC99>0</uC99>
+            <uC99>1</uC99>
             <useXO>0</useXO>
             <v6Lang>1</v6Lang>
             <v6LangP>1</v6LangP>
@@ -335,7 +335,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F40XX,ARM_MATH_CM4,__CC_ARM,__TARGET_FPU_VFP,__FPU_PRESENT</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\FWLIB\inc;..\USER;..\TASK;..\HARDWARE\Led;..\HARDWARE\Encoder;..\HARDWARE\GPIO;..\HARDWARE\OLED;..\HARDWARE\IIC;..\UCOS3\uCOS-III\Ports;..\UCOS3\uCOS-III\Source;..\UCOS3\uC-LIB;..\UCOS3\uC-CPU;.\CONFIG</IncludePath>
+              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\FWLIB\inc;..\USER;..\TASK;..\HARDWARE\Led;..\HARDWARE\Encoder;..\HARDWARE\GPIO;..\HARDWARE\OLED;..\HARDWARE\IIC;..\UCOS3\uCOS-III\Ports;..\UCOS3\uCOS-III\Source;..\UCOS3\uC-LIB;..\UCOS3\uC-CPU;.\CONFIG;.\APP;..\HARDWARE\DAC;..\HARDWARE\ADC</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -428,6 +428,21 @@
               <FileName>snprintfModify.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\OLED\snprintfModify.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\GPIO\gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\ADC\adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>dac.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\DAC\dac.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -648,6 +663,11 @@
               <FileName>TASK_DISPLAY.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\TASK\TASK_DISPLAY.c</FilePath>
+            </File>
+            <File>
+              <FileName>TASK_REGULATE.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\TASK\TASK_REGULATE.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -903,6 +923,21 @@
               <FileName>os_cfg_app.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\CONFIG\os_cfg_app.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>USER/APP</GroupName>
+          <Files>
+            <File>
+              <FileName>InteractKeyScreen.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\APP\InteractKeyScreen.c</FilePath>
+            </File>
+            <File>
+              <FileName>PowerModule.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\APP\PowerModule.c</FilePath>
             </File>
           </Files>
         </Group>
