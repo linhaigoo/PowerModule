@@ -74,7 +74,7 @@ SCREEN_VAR_ID_Typedef varValueParser(SCREEN_VAR_ID_Typedef varID, PM_Typedef * p
 					float_tmp = (float_tmp < pPM->I_LIM) ? float_tmp : pPM->I_LIM;
 					if(pPM->curMODE == VOL_MODE)
 					{					
-						pPM->isWorking = false;
+						pPM->isWorking = OFF;
 						pPM->curMODE = AMP_MODE;
 						
 						varUpdateID = MODE_VAR;
@@ -86,7 +86,7 @@ SCREEN_VAR_ID_Typedef varValueParser(SCREEN_VAR_ID_Typedef varID, PM_Typedef * p
 					float_tmp = (float_tmp < pPM->V_LIM) ? float_tmp : pPM->V_LIM;
 					if(pPM->curMODE == AMP_MODE)
 					{
-						pPM->isWorking = false;
+						pPM->isWorking = OFF;
 						pPM->curMODE = VOL_MODE;
 						
 						varUpdateID = MODE_VAR;
@@ -286,30 +286,31 @@ void varFine(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, int16_t coun
 	int16_t   int_tmp;
 	SCREEN_VAR_ID_Typedef updateID;
 	SCREEN_VAR_ID_Typedef name_id;
-	switch(screen_vars[pIntrMange->selectedVarID].type)
+	SCREEN_VAR_ID_Typedef varID = pIntrMange->selectedVarID;
+	switch(screen_vars[varID].type)
 	{
 		case UINT8_T:
-			int_tmp = *(uint8_t*)screen_vars[pIntrMange->selectedVarID].ptr + (count>>2);
+			int_tmp = *(uint8_t*)screen_vars[varID].ptr + (count>>2);
 		
-			updateID = varValueParser((SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID, pPM, &int_tmp, UINT8_T);
-			*(uint8_t*)screen_vars[pIntrMange->selectedVarID].ptr = int_tmp;
+			updateID = varValueParser(varID, pPM, &int_tmp, UINT8_T);
+			*(uint8_t*)screen_vars[varID].ptr = int_tmp;
 		break;
 			
 		case FLOAT_T:
 			
-		float_tmp = *(float*)screen_vars[pIntrMange->selectedVarID].ptr + 0.01 * count;
+		float_tmp = *(float*)screen_vars[varID].ptr + 0.01 * count;
 		
-		updateID = varValueParser((SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID, pPM, &float_tmp, FLOAT_T);
-		*(float*)screen_vars[pIntrMange->selectedVarID].ptr = float_tmp;
+		updateID = varValueParser(varID, pPM, &float_tmp, FLOAT_T);
+		*(float*)screen_vars[varID].ptr = float_tmp;
 		
 		break;
 
 		case STRING_VAR:
 		{
-			COMP_BOX_Typedef * ptr = (COMP_BOX_Typedef *)screen_vars[pIntrMange->selectedVarID].ptr;
+			COMP_BOX_Typedef * ptr = (COMP_BOX_Typedef *)screen_vars[varID].ptr;
 			
-			name_id = (SCREEN_VAR_ID_Typedef)(ptr->item_selected + count);
-			SCREEN_VAR_ID_Typedef updateID = varValueParser((SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID, pPM, (void*)&name_id, STRING_VAR);
+			name_id = (SCREEN_VAR_ID_Typedef)(ptr->item_selected + 1);
+			SCREEN_VAR_ID_Typedef updateID = varValueParser(varID, pPM, (void*)&name_id, STRING_VAR);
 			
 			ptr->item_selected = name_id;
 			*(ptr->varPtr) = name_id;
@@ -326,7 +327,60 @@ void varFine(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, int16_t coun
 	{
 		strFill(pIntrMange, updateID, true, false);
 	}
-	strFill(pIntrMange, (SCREEN_VAR_ID_Typedef)pIntrMange->selectedVarID, false, true);
+	strFill(pIntrMange, (SCREEN_VAR_ID_Typedef)varID, false, true);
+}
+
+
+bool varChange(uint8_t var_id, uint8_t * pdate, PM_Typedef * pPM)
+{
+	float float_tmp;
+	int16_t   int_tmp;
+	SCREEN_VAR_ID_Typedef updateID;
+	SCREEN_VAR_ID_Typedef name_id;
+	uint8_t * pt;
+	switch(screen_vars[var_id].type)
+	{
+		case UINT8_T:
+			int_tmp = *pdate;
+			updateID = varValueParser((SCREEN_VAR_ID_Typedef)var_id, pPM, &int_tmp, UINT8_T);
+			*(uint8_t*)screen_vars[var_id].ptr = int_tmp;
+		break;
+			
+		case FLOAT_T:
+			pt = (uint8_t *)(&float_tmp);
+			*(pt++) = *pdate++;
+			*(pt++) = *pdate++;
+			*(pt++) = *pdate++;
+			*(pt++) = *pdate++;
+			updateID = varValueParser(var_id, pPM, &float_tmp, FLOAT_T);
+			*(float*)screen_vars[var_id].ptr = float_tmp;
+		break;
+
+		case STRING_VAR:
+		{
+			COMP_BOX_Typedef * ptr = (COMP_BOX_Typedef *)screen_vars[var_id].ptr;
+			
+			name_id = *pdate;
+			SCREEN_VAR_ID_Typedef updateID = varValueParser(var_id, pPM, (void*)&name_id, STRING_VAR);
+			
+			ptr->item_selected = name_id;
+			*(ptr->varPtr) = name_id;
+		}
+			break;
+		case WAVE:
+			break;
+		
+		default:
+			return false;
+			break;
+	}
+
+	if(updateID != VAR_EMPTY)
+	{
+		extScreenUpdate[updateID] = true;
+	}
+	extScreenUpdate[var_id] = true;
+	return true;
 }
 
 void modifyStateSwitch(INTERACT_MANGE_Typedef * pIntrMange, uint8_t modifyState)
@@ -349,7 +403,7 @@ void modifyStateSwitch(INTERACT_MANGE_Typedef * pIntrMange, uint8_t modifyState)
 }
 
 
-void dynamicShow(INTERACT_MANGE_Typedef * pIntrMange)
+void dynamicShow(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM)
 {
 	if(pIntrMange->unOperationDuration > LOST_FOCUS_TIME)
 	{
@@ -360,6 +414,18 @@ void dynamicShow(INTERACT_MANGE_Typedef * pIntrMange)
 
 			//lost focus display
 			modifyStateSwitch(pIntrMange, false);
+			
+			//trans to mode var
+			if(pPM->curMODE == VOL_MODE)
+			{
+				switchVarID(pIntrMange, VOL_VAR);
+			}
+			else
+			{
+				switchVarID(pIntrMange, CURRENT_VAR);
+			}
+			
+			pIntrMange->unOperationDuration = 0;
 		}
 	}
 	else if(pIntrMange->selectedVarID != VAR_EMPTY && !pIntrMange->isModifying)
@@ -375,7 +441,24 @@ void dynamicShow(INTERACT_MANGE_Typedef * pIntrMange)
 }
 
 
-
+void extComDisplay(INTERACT_MANGE_Typedef * pIntrMange)
+{
+	bool flag = false;
+	for(int varID = 1; varID < COMPONENT_NUM; varID++)
+	{
+		if(extScreenUpdate[varID])
+		{
+			extScreenUpdate[varID] = false;
+			flag = true;
+			modifyStateSwitch(pIntrMange, false);
+			strFill(pIntrMange, varID, true, false);
+		}
+	}
+	if(flag)
+	{
+//		switchVarID(pIntrMange, VAR_EMPTY);
+	}
+}
 
 
 void interact(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, uint8_t key_pressed, int16_t count)
@@ -394,7 +477,7 @@ void interact(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, uint8_t key
 	{
 		if(pIntrMange->selectedVarID == VAR_EMPTY)
 		{
-			pPM->isWorking = false;
+			pPM->isWorking = OFF;
 		}
 		else
 		{
@@ -460,7 +543,7 @@ void realTimeInteract(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, uin
 			{
 				switchVarID(pIntrMange, varID); 
 			}
-			pPM->isWorking = false;
+			pPM->isWorking = OFF;
 		}
 	}
 }
@@ -469,8 +552,8 @@ void showRealTimeVar(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM)
 {
 	if(pIntrMange->curPage == 0)
 	{
-//		pPM->isWorking = true;//todo debug
-		if(pPM->isWorking)
+//		pPM->isWorking = NORM;//todo debug
+		if(pPM->isWorking == NORM)
 		{
 			if(pIntrMange->isModifying && screen_vars[pIntrMange->selectedVarID].ifOverLap)
 			{
@@ -489,7 +572,14 @@ void showRealTimeVar(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM)
 			{
 				strDirectShow(VOL_CUR_VAR, false);
 			}
-			OLED_ShowStringAlign(screen_vars[WAVE_DIAPLAY].pos_x, (screen_vars[WAVE_DIAPLAY].pos_y % 2), "___ON___", false);
+			if(pPM->on)
+			{
+				OLED_ShowStringAlign(screen_vars[WAVE_DIAPLAY].pos_x, (screen_vars[WAVE_DIAPLAY].pos_y % 2), "___ON_H_", false);
+			}
+			else
+			{
+				OLED_ShowStringAlign(screen_vars[WAVE_DIAPLAY].pos_x, (screen_vars[WAVE_DIAPLAY].pos_y % 2), "___ON_L_", false);
+			}
 		}
 		else
 		{
@@ -497,7 +587,18 @@ void showRealTimeVar(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM)
 				strDirectShow(VOL_VAR, pIntrMange->isModifying && pIntrMange->selectedVarID == VOL_VAR);
 
 				//specific
-			OLED_ShowStringAlign(screen_vars[WAVE_DIAPLAY].pos_x, (screen_vars[WAVE_DIAPLAY].pos_y % 2), "___OFF__", false);	
+			if(pPM->isWorking == OFF)
+			{
+				OLED_ShowStringAlign(screen_vars[WAVE_DIAPLAY].pos_x, (screen_vars[WAVE_DIAPLAY].pos_y % 2), "___OFF__", false);	
+			}
+			else if(pPM->isWorking == AMP_EXCESS)
+			{
+				OLED_ShowStringAlign(screen_vars[WAVE_DIAPLAY].pos_x, (screen_vars[WAVE_DIAPLAY].pos_y % 2), "I_EXCESS", false);	
+			}
+			else if(pPM->isWorking == CALIBRATE_FAIL)
+			{
+				OLED_ShowStringAlign(screen_vars[WAVE_DIAPLAY].pos_x, (screen_vars[WAVE_DIAPLAY].pos_y % 2), "CALI_ERR", false);	
+			}
 		}
 		
 	}
@@ -519,7 +620,9 @@ void InteractInit(INTERACT_MANGE_Typedef * pIntrMange)
 	strFill(pIntrMange, I_LIM_VAR, true, false);
 	strFill(pIntrMange, MODE_VAR, true, false);
 	
-	
+	strFill(pIntrMange, ALL_T_VAR, true, false);
+	strFill(pIntrMange, ON_T_VAR, true, false);
+	strFill(pIntrMange, ID_VAR, true, false);
 }
 
 INTERACT_MANGE_Typedef InteractMange;

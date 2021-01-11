@@ -25,8 +25,11 @@ void InterectMangeInit(INTERACT_MANGE_Typedef * pIntrMange);
 void InteractInit(INTERACT_MANGE_Typedef * pIntrMange);
 void interact(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, uint8_t key_pressed, short count);
 void showRealTimeVar(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM);
-void dynamicShow(INTERACT_MANGE_Typedef * pIntrMange);
+void dynamicShow(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM);
 void realTimeInteract(INTERACT_MANGE_Typedef * pIntrMange, PM_Typedef * pPM, uint8_t key_pressed, int16_t count);
+void extComDisplay(INTERACT_MANGE_Typedef * pIntrMange);
+
+bool varChange(uint8_t var_id, uint8_t * pdate, PM_Typedef * pPM);
 
 extern INTERACT_MANGE_Typedef InteractMange;
 #endif

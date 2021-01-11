@@ -23,8 +23,20 @@ void MY_DAC_Init(void)
   DAC_SetChannel1Data(DAC_Align_12b_R, 0);
 }
 
-void DacSetVol(float vol)
+bool DacSetVol(float vol)
 {
+	bool flag = true;
+	if(vol >3.29f)
+	{
+		vol = 3.29f;
+		flag = false;
+	}
+	if(vol <0.0f)
+	{
+		vol = 0.0f;
+		flag = false;
+	}
 	uint16_t data = vol / 3.3f * 4096;
 	DAC_SetChannel1Data(DAC_Align_12b_R, data);
+	return flag;
 }

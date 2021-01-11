@@ -335,7 +335,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F40XX,ARM_MATH_CM4,__CC_ARM,__TARGET_FPU_VFP,__FPU_PRESENT</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\FWLIB\inc;..\USER;..\TASK;..\HARDWARE\Led;..\HARDWARE\Encoder;..\HARDWARE\GPIO;..\HARDWARE\OLED;..\HARDWARE\IIC;..\UCOS3\uCOS-III\Ports;..\UCOS3\uCOS-III\Source;..\UCOS3\uC-LIB;..\UCOS3\uC-CPU;.\CONFIG;.\APP;..\HARDWARE\DAC;..\HARDWARE\ADC</IncludePath>
+              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\FWLIB\inc;..\USER;..\TASK;..\HARDWARE\Led;..\HARDWARE\Encoder;..\HARDWARE\GPIO;..\HARDWARE\OLED;..\HARDWARE\IIC;..\UCOS3\uCOS-III\Ports;..\UCOS3\uCOS-III\Source;..\UCOS3\uC-LIB;..\UCOS3\uC-CPU;.\CONFIG;.\APP;..\HARDWARE\DAC;..\HARDWARE\ADC;.\LIB\comLib;.\APP\screenCom</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -443,6 +443,11 @@
               <FileName>dac.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\DAC\dac.c</FilePath>
+            </File>
+            <File>
+              <FileName>screenComBsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\LIB\comLib\screenComBsp.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -938,6 +943,36 @@
               <FileName>PowerModule.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\APP\PowerModule.c</FilePath>
+            </File>
+            <File>
+              <FileName>screenComController.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\APP\screenCom\screenComController.c</FilePath>
+            </File>
+            <File>
+              <FileName>screenComponent.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\APP\screenComponent.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>COM_LIB</GroupName>
+          <Files>
+            <File>
+              <FileName>comLib.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\LIB\comLib\comLib.c</FilePath>
+            </File>
+            <File>
+              <FileName>comLibApp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\LIB\comLib\comLibApp.c</FilePath>
+            </File>
+            <File>
+              <FileName>screenCom.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\LIB\comLib\screenCom.c</FilePath>
             </File>
           </Files>
         </Group>

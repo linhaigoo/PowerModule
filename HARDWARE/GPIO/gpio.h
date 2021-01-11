@@ -4,7 +4,7 @@
 #include "stm32f4xx.h"
 #include "sys.h"
 
-#define CTRL_OUT_NUM 4
+#define CTRL_OUT_NUM 5
 
 //PA2 PM_CTRL
 #define PM_CTRL_PORT		GPIOA
@@ -33,6 +33,13 @@
 #define MODE_SWITCHER_CLK  					RCC_AHB1Periph_GPIOA
 #define MODE_SWITCHER_OTYPE   			GPIO_OType_PP
 #define MODE_SWITCHER         			PAout(3)
+
+//PA11 RS_CTRL
+#define RS_CTRL_PORT		GPIOA
+#define RS_CTRL_PIN			GPIO_Pin_11
+#define RS_CTRL_CLK  		RCC_AHB1Periph_GPIOA
+#define RS_CTRL_OTYPE   GPIO_OType_PP
+#define RS_CTRL         PAout(11)
 
 
 void CTRL_OUT_Init(void);
