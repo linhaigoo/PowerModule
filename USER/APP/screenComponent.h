@@ -15,7 +15,7 @@ typedef enum
 	STRING,
 	STRING_VAR,
 	WAVE,
-}VAR_TypeEdef;
+}VAR_Typedef;
 
 
 typedef enum
@@ -53,7 +53,7 @@ typedef struct
 	uint8_t pos_x;
 	uint8_t pos_y;
 	uint8_t spaceLen;
-	VAR_TypeEdef type;
+	VAR_Typedef type;
 	uint8_t promp_id;
 	uint8_t rvar_id; //relative var id
 	uint8_t ifOverLap;

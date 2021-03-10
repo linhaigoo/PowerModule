@@ -25,7 +25,7 @@ void InterectMangeInit(INTERACT_MANGE_Typedef * pIntrMange)
 char snprintfTwoBuff[2][16] ={{' ',' ',' ', ' ', ' '},{' ',' ',' ', ' ', ' '}};
 
 
-SCREEN_VAR_ID_Typedef varValueParser(SCREEN_VAR_ID_Typedef varID, PM_Typedef * pPM, void * pVarTmp, VAR_TypeEdef type)
+SCREEN_VAR_ID_Typedef varValueParser(SCREEN_VAR_ID_Typedef varID, PM_Typedef * pPM, void * pVarTmp, VAR_Typedef type)
 {
 	float float_tmp;
 	uint8_t uint8_t_tmp;
