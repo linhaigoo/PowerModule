@@ -375,11 +375,15 @@ bool varChange(uint8_t var_id, uint8_t * pdate, PM_Typedef * pPM)
 			break;
 	}
 
-	if(updateID != VAR_EMPTY)
+	if(updateID != VAR_EMPTY && updateID < COMPONENT_NUM)
 	{
 		extScreenUpdate[updateID] = true;
 	}
-	extScreenUpdate[var_id] = true;
+	
+	if(var_id != VAR_EMPTY && var_id < COMPONENT_NUM)
+	{
+		extScreenUpdate[var_id] = true;
+	}
 	return true;
 }
 
@@ -451,7 +455,8 @@ void extComDisplay(INTERACT_MANGE_Typedef * pIntrMange)
 			extScreenUpdate[varID] = false;
 			flag = true;
 			modifyStateSwitch(pIntrMange, false);
-			strFill(pIntrMange, varID, true, false);
+			pIntrMange->selectedVarID = VAR_EMPTY;
+			strFill(pIntrMange, varID, true, true);
 		}
 	}
 	if(flag)

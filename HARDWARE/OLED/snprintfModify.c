@@ -9,6 +9,7 @@
 *               > 0       length &&  transform successfully  
 */
 #include "stdint.h"
+#include "snprintfModify.h"
 
 int Int2Str(unsigned int IntNum, char Buff[], uint8_t const BuffSize, uint8_t*Index,  uint8_t MinumdigitNum)
 {
